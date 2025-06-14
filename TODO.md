@@ -1,0 +1,60 @@
+# TODO
+
+- Refine the prompt for edge cases that's not an outfit or a complete outfit
+  - Use LangChain
+    - Tell the user why the image is not good for this
+- Gives ideas or suggestions
+- Take stored outfits and mix and match
+- Picture of clothing in the database
+- Add seeding to the model
+  - Hyperparameter training
+
+---
+
+## Database Type
+### MongoDB Atlas
+**Why: Fully managed, easy to set up, has a free tier, and great for storing images (using GridFS for larger files)**
+
+- Store image with classification
+  - Type: Shirt, Pants, Accessory (anything that doesn't fit other categories), shoe, outerwear
+  - Short Description of each 
+
+Setup:
+```
+Create an account at mongodb.com/atlas
+
+Create a free cluster
+
+Add your peers as database users
+
+Whitelist IP addresses (or allow all for development)
+
+Use connection strings to share access
+```
+
+---
+
+## Langchain
+- Determine if clothing should be added to the database
+- Rejects user input
+
+---
+
+## Docker
+- Implement Docker
+
+---
+
+## Model
+
+Model: [Qwen2.5-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct)
+
+---
+
+## UI
+
+Streamlit
+
+```bash
+pip install streamlit
+```
