@@ -49,6 +49,11 @@ Use connection strings to share access
 - Determine if clothing should be added to the database
 - Rejects user input
 
+Download:
+```bash
+pip install langchain-core langchain-community
+```
+
 ---
 
 ## Docker
