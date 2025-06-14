@@ -11,6 +11,17 @@
 
 ---
 
+## Order 
+1. A Langchain function that runs basic version in py file (With Prompt engineering)
+2. Get Images Tokenized
+3. Put Images in the DB
+4. Langchain Pipeline
+5. Integrate Langchain with VLM and Database
+6. Frontend
+
+
+---
+
 ## Database Type
 ### MongoDB Atlas
 **Why: Fully managed, easy to set up, has a free tier, and great for storing images (using GridFS for larger files)**
