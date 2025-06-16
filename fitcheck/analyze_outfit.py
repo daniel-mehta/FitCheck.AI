@@ -9,6 +9,7 @@ import torch
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from langchain.tools import tool
 import os
+import re
 
 # Load model & processor (on module load)
 model_id = "Qwen/Qwen2.5-VL-7B-Instruct"
@@ -37,6 +38,28 @@ def get_image(image_name: str) -> Image.Image:
         raise FileNotFoundError(f"Image not found: {image_path}")
     return Image.open(image_path).convert("RGB")
 
+# Extract rating score from AI output
+def extract_rating(text):
+    # using this means that we need to state in the prompt that "Rating: xx/100" must appear in the output exactly once"
+    match = re.search(r'Rating:\s*(\d+)/100', text)
+    if match:
+        score = int(match.group(1))
+        return score / 100.0
+    return None  # or raise an error / default value
+
+# Extract style comments from AI output
+def extract_style_paragraph(text):
+    match = re.search(r'Style:\s*(.*?)(?=\s*(Rating:|Comment:|$))', text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return None
+
+# Extract comments for improvement from AI output
+def extract_comment(text):
+    match = re.search(r'Comment:\s*(.*)', text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return None
 
 # Outfit analyzer tool
 def analyze_outfit(image_name: str) -> str:
