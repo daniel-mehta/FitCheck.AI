@@ -1,0 +1,6 @@
+torch
+transformers
+Pillow
+langchain
+imagehash
+pymongo
