@@ -44,6 +44,9 @@ def analyze_outfit(image_name: str) -> str:
     Analyze the outfit in the given image (from the Images/ folder) and return a structured critique.
     """
     print(f"[DEBUG] Loading image: {image_name}")
+    print("[DEBUG] CWD:", os.getcwd())
+    print("[DEBUG] Expected path:", os.path.join(IMAGE_DIR, image_name))
+
     img = get_image(image_name)
 
     print("[DEBUG] Creating message payload")
@@ -83,3 +86,11 @@ def analyze_outfit(image_name: str) -> str:
     print("[DEBUG] Output ready")
     return result[0]
 
+@tool
+def analyze_outfit_tool(image_name: str) -> str:
+    """
+    LangChain tool version of the outfit analyzer.
+    Input: image filename located in 'Images/' folder.
+    Output: Model's style, rating, and comment critique.
+    """
+    return analyze_outfit(image_name)
