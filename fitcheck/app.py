@@ -42,7 +42,7 @@ if uploaded_file is not None:
             phash = str(imagehash.phash(image))
             
             # Save to temporary file for analysis
-            temp_path = "temp_upload.jpg"
+            temp_path = "..\Images\temp_upload.jpg"
             image.save(temp_path)
 
             # Connect to MongoDB
