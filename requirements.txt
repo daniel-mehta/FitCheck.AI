@@ -5,3 +5,5 @@ langchain
 imagehash
 pymongo
 streamlit
+torchvision
+accelerate
