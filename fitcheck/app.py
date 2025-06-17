@@ -3,9 +3,20 @@ from PIL import Image
 import io
 import imagehash
 from analyze_outfit import analyze_outfit_tool, extract_comment, extract_rating, extract_style_paragraph
+import dns 
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+import tenacity
+
+
+# Prevent Streamlit from watching Torch's internal site packages to avoid runtime errors
+import sys
+import types
+sys.modules["torch.classes"] = types.ModuleType("torch.classes")
+sys.path = [p for p in sys.path if "site-packages" not in p]
+
+
 
 # MongoDB Setup
 def get_mongo_client():
@@ -42,7 +53,10 @@ if uploaded_file is not None:
             phash = str(imagehash.phash(image))
             
             # Save to temporary file for analysis
-            temp_path = "..\Images\temp_upload.jpg"
+            image_dir = os.path.join(os.path.dirname(__file__), "..", "Images")
+            os.makedirs(image_dir, exist_ok=True)
+
+            temp_path = os.path.join(image_dir, "temp_upload.jpg")
             image.save(temp_path)
 
             # Connect to MongoDB
@@ -58,7 +72,8 @@ if uploaded_file is not None:
                 st.stop()  # Halt further processing
             
             # Call your analysis function
-            analysis_result = analyze_outfit_tool.invoke(temp_path)
+            analysis_result = analyze_outfit_tool.invoke(os.path.abspath(temp_path))
+
             
             # Clean up temp file
             os.remove(temp_path)
@@ -66,7 +81,7 @@ if uploaded_file is not None:
             # Prepare document for MongoDB
             outfit_doc = {
                 "image_hash": phash,
-                "upload_date": datetime.now(datetime.timezone.utc),
+                "upload_date": datetime.now(timezone.utc),
                 "rating": extract_rating(analysis_result),
                 "style": extract_style_paragraph(analysis_result),
                 "comment": extract_comment(analysis_result),
@@ -75,7 +90,7 @@ if uploaded_file is not None:
                     "size": uploaded_file.size,
                     "content_type": uploaded_file.type
                 },
-                "analysis_date": datetime.now(datetime.timezone.utc)
+                "analysis_date": datetime.now(timezone.utc)
             }
             
             # Insert into MongoDB
