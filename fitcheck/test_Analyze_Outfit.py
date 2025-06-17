@@ -12,6 +12,6 @@ print(result.encode('utf-8', errors='replace').decode('utf-8'))
 
 from analyze_outfit import analyze_outfit_tool
 
-
+print("[DEBUG] Calling analyze_outfit_tool with 'fit_look_01.jpg'")
 result = analyze_outfit_tool.invoke("fit_look_01.jpg")
 print(result.encode('utf-8', errors='replace').decode('utf-8'))

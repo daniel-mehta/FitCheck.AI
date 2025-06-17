@@ -10,12 +10,18 @@ from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from langchain.tools import tool
 import os
 import re
+from modelscope import AutoProcessor, Qwen2_5_VLForConditionalGeneration
+
 
 # Load model & processor (on module load)
-model_id = "Qwen/Qwen2.5-VL-7B-Instruct"
+# Use quantized 3B model
+model_id = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ"
+
 processor = AutoProcessor.from_pretrained(model_id)
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-    model_id, torch_dtype="auto", device_map="auto"
+    model_id,
+    torch_dtype=torch.float16,
+    device_map="auto"
 )
 
 # Folder where images are stored
@@ -23,12 +29,14 @@ IMAGE_DIR = "Images"
 
 # Fashion prompt template
 FASHION_PROMPT = (
-    "You're a brutally honest but stylish fashion critic. "
-    "Look at this outfit and describe it in detail.\n\n"
-    "Then follow this format exactly:\n"
-    "Style: [describe the clothing and aesthetic]\n"
-    "Rating: [score out of 100]\n"
-    "Comment: [funny one-line roast or boost — be witty, playful, or savage depending on the score]"
+    "You're a ruthless, stylish fashion critic with zero tolerance for mediocrity. "
+    "Your job is to judge this outfit with sharp precision and brutal honesty. "
+    "Forget politeness — if it’s boring, mismatched, or unoriginal, tear it apart. "
+    "Only truly exceptional style earns praise, and even then, make them fight for it.\n\n"
+    "Follow this exact format, don't deviate from it:\n"
+    "Style: [Clear, blunt breakdown of the clothing and overall aesthetic — call out strengths and weaknesses with no filter]\n"
+    "Rating: [Score out of 100 — average is 45. Weak or ugly fits land in the 20–45 range. Only elite looks should break 80]\n"
+    "Comment: [Savage one-liner — roast it if it deserves it, or give reluctant praise if it's genuinely stylish. No fluff, no mercy.]"
 )
 
 # Image loader
