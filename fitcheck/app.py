@@ -8,6 +8,8 @@ from pymongo import MongoClient
 from datetime import datetime, timezone
 import os
 import tenacity
+import random
+
 
 
 # Prevent Streamlit from watching Torch's internal site packages to avoid runtime errors
@@ -30,8 +32,10 @@ def get_mongo_client():
 # Configure page
 st.set_page_config(page_title="Fashion AI Advisor", layout="centered")
 
-# App title and description
-st.title("👕 Outfit Analyzer")
+clothing_emojis = ["👕", "👖", "👗", "🧥", "👔", "🩳", "🧢", "👚", "👘", "🥿", "👟", "🥾"]
+title_emoji = random.choice(clothing_emojis)
+
+st.title(f"{title_emoji} Outfit Analyzer")
 st.markdown("Upload your outfit photo for instant analysis")
 
 # File uploader
