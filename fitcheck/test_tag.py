@@ -4,7 +4,7 @@ from tagging import tag_closet_item
 
 # Absolute path to test image
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-TEST_IMAGE = os.path.join(BASE_DIR, "Images", "fit_look_02.jpg")
+TEST_IMAGE = os.path.join(BASE_DIR, "Images", "shorts.jpg")
 
 # Run tagging
 result = tag_closet_item(TEST_IMAGE)
