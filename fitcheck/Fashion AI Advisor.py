@@ -10,6 +10,8 @@ import os
 import tenacity
 import random
 
+# Run with:
+# streamlit run "fitcheck\Fashion AI Advisor.py"
 
 
 # Prevent Streamlit from watching Torch's internal site packages to avoid runtime errors

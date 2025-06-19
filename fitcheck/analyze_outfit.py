@@ -100,7 +100,7 @@ def analyze_outfit(image_name: str) -> str:
     print("[DEBUG] Running model.generate()")
     outputs = model.generate(
         **inputs,
-        max_new_tokens=128,
+        max_new_tokens=256,
         temperature=0.8,
         top_p=0.95,
         repetition_penalty=1.2,
