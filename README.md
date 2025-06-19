@@ -148,6 +148,7 @@ streamlit run "fitcheck/Fashion AI Advisor.py"
 - **Daniel Mehta**  
 - **George Fotabong**
 - **Dylan Higuchi**
+- **Jacob DeAbreu**
 
 ---
 
