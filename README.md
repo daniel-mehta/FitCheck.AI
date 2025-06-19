@@ -155,3 +155,10 @@ streamlit run "fitcheck/Fashion AI Advisor.py"
 ## 🧩 Notes
 - MongoDB URI is hardcoded for now (demo only - no sensitive data).
 
+---
+
+## 📄 License
+
+This code is free to use, modify, and share for non-commercial purposes.  
+Commercial use requires prior written permission. All rights reserved.
+
