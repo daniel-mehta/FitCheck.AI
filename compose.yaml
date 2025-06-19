@@ -1,0 +1,7 @@
+services:
+  server:
+    build:
+      context: .
+    ports:
+      - 8501:8501  #Expose Streamlit's port to your host
+    command: streamlit run ./fitcheck/fashion_ai_advisor.py  #Make sure the filename is correct
