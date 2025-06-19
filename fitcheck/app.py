@@ -102,7 +102,7 @@ if uploaded_file is not None:
             
             # Display results
             st.subheader("Analysis Results")
-            st.text(analysis_result.encode('utf-8', errors='replace').decode('utf-8'))
+            st.markdown(analysis_result.encode('utf-8', errors='replace').decode('utf-8'), unsafe_allow_html=True)
             
             st.success(f"✅ Outfit analysis saved to database with ID: {result.inserted_id}")
             
