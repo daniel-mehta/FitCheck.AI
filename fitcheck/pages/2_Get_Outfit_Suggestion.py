@@ -39,7 +39,9 @@ class ClothingItem:
         self.location = data.get("location", "Indoor")
         self.formality = data.get("formality", "Casual")
         self.gender = data.get("gender", "Unisex")
-        self.image_path = data.get("image_path", "")
+        
+        raw_path = data.get("path", "")
+        self.image_path = str(Path(raw_path).resolve()) if raw_path else ""
         
     def __repr__(self):
         return f"{self.name} ({self.color} {self.item_type})"
@@ -69,19 +71,23 @@ class OutfitRecommender:
                     formality: Optional[str] = None,
                     gender: Optional[str] = None) -> List[ClothingItem]:
         filtered = self.clothing_items
-        
+
         if item_type:
-            filtered = [item for item in filtered if item.item_type == item_type]
+            filtered = [item for item in filtered if item.item_type.lower() == item_type.lower()]
         if color:
-            filtered = [item for item in filtered if item.color == color]
-        if location:
-            filtered = [item for item in filtered if item.location == location]
+            filtered = [item for item in filtered if item.color.lower() == color.lower()]
+        if location and item_type.lower() != "shoes":
+            filtered = [item for item in filtered if item.location.lower() == location.lower()]
         if formality:
-            filtered = [item for item in filtered if item.formality == formality]
+            filtered = [item for item in filtered if item.formality.lower() == formality.lower()]
         if gender:
-            filtered = [item for item in filtered if item.gender == gender or item.gender == "Unisex"]
-            
+            if gender == "Unisex":
+                pass  # match all
+            else:
+                filtered = [item for item in filtered if item.gender.lower() == gender.lower() or item.gender.lower() == "unisex"]
+
         return filtered
+
     
     def get_compatible_colors(self, color: str) -> List[str]:
         return COLOR_COMPATIBILITY.get(color.lower(), [])
@@ -114,6 +120,8 @@ class OutfitRecommender:
                 formality=formality,
                 gender=gender
             )
+            print(f"{item_type}: Found {len(candidates)} candidates after filtering")
+
             
             # Filter by color compatibility if base color is provided
             if base_color and candidates:
@@ -127,6 +135,8 @@ class OutfitRecommender:
                 # Use the first item's color as base if not specified
                 if base_color is None:
                     base_color = outfit[item_type].color
+            else:
+                print(f"❌ No candidates for '{item_type}' — breaking outfit.")
         
         return outfit
 
@@ -139,15 +149,15 @@ def display_outfit(outfit: Dict[str, ClothingItem]):
     for item_type, item in outfit.items():
         with cols[col_idx]:
             st.markdown(f"**{item_type.capitalize()}**")
-            st.write(item.name)
-            st.write(f"Color: {item.color}")
-            st.write(f"Type: {item.formality}")
             
-            # If you have images in your JSON data
             if item.image_path and os.path.exists(item.image_path):
                 st.image(item.image_path, width=150)
-        
+            else:
+                st.write(f"Color: {item.color}")
+                st.write(f"Formality: {item.formality}")
+
         col_idx = (col_idx + 1) % 3
+
 
 def main():
     st.set_page_config(page_title="Outfit Recommender", page_icon="👕")
@@ -171,11 +181,12 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            location = st.selectbox("Location", ["Indoor", "Outdoor"])
-            gender = st.selectbox("Gender", ["Men's", "Women's", "Unisex"])
+            location = st.selectbox("Location", ["Any", "Indoor", "Outdoor"])
+            gender = st.selectbox("Gender", ["Any", "Men's", "Women's", "Unisex"])
         with col2:
-            formality = st.selectbox("Formality", ["Formal", "Casual"])
-            color_preference = st.selectbox("Preferred Color (optional)", [""] + sorted(list(COLOR_COMPATIBILITY.keys())))
+            formality = st.selectbox("Formality", ["Any", "Formal", "Casual"])
+            color_preference = st.selectbox("Preferred Color (optional)", ["Any"] + sorted(list(COLOR_COMPATIBILITY.keys())))
+
         
         submitted = st.form_submit_button("Recommend Outfit")
     
@@ -190,11 +201,12 @@ def main():
             return
         
         outfit = st.session_state.recommender.recommend_outfit(
-            location=location,
-            formality=formality,
-            gender=gender,
-            base_color=color_preference if color_preference else None
+            location=None if location == "Any" else location,
+            formality=None if formality == "Any" else formality,
+            gender=None if gender == "Any" else gender,
+            base_color=None if color_preference == "Any" else color_preference
         )
+
         
         if outfit:
             display_outfit(outfit)

@@ -44,7 +44,13 @@ def tag_closet_item(image_path: str) -> dict:
 
         item_type = classify(image, ITEM_LABELS).capitalize()
         color = classify(image, COLOR_LABELS).capitalize()
-        indoor_outdoor = classify(image, LOCATION_LABELS)
+
+        # Fix: define indoor_outdoor
+        if item_type.lower() == "shoes":
+            indoor_outdoor = "Outdoor"
+        else:
+            indoor_outdoor = classify(image, LOCATION_LABELS)
+
         formality = classify(image, FORMALITY_LABELS)
         gender = classify(image, GENDER_LABELS)
 
@@ -61,3 +67,4 @@ def tag_closet_item(image_path: str) -> dict:
 
     except Exception as e:
         return {"error": str(e)}
+
