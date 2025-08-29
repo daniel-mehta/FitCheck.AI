@@ -12,12 +12,17 @@ import os
 import re
 from modelscope import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
+# ----------------------------
+# Model & Processor Setup
+# ----------------------------
 
-# Load model & processor (on module load)
-# Use quantized 3B model
+# Use quantized 3B Qwen2.5-VL model (lightweight enough for local inference)
 model_id = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ"
 
+# Load multimodal processor (handles both text + images)
 processor = AutoProcessor.from_pretrained(model_id)
+
+# Load model onto GPU if available, use float16 for memory efficiency
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     model_id,
     torch_dtype=torch.float16,
@@ -27,7 +32,13 @@ model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
 # Folder where images are stored
 IMAGE_DIR = "Images"
 
-# Fashion prompt template
+# ----------------------------
+# Prompt Template
+# ----------------------------
+
+# Fashion prompt enforces structure:
+# "Style:", "Rating:", and "Comment:" must appear
+# so output can be parsed reliably with regex
 FASHION_PROMPT = (
     "You're a ruthless, stylish fashion critic with zero tolerance for mediocrity. "
     "Your job is to judge this outfit with sharp precision and brutal honesty. "
@@ -39,8 +50,13 @@ FASHION_PROMPT = (
     "Comment: [Savage one-liner — roast it if it deserves it, or give reluctant praise if it's genuinely stylish. No fluff, no mercy.]"
 )
 
+# ----------------------------
+# Utility Functions
+# ----------------------------
+
 # Image loader
 def get_image(image_name: str) -> Image.Image:
+    """Load and return an image from the Images/ folder (RGB mode)."""
     image_path = os.path.join(IMAGE_DIR, image_name)
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
@@ -48,6 +64,7 @@ def get_image(image_name: str) -> Image.Image:
 
 # Extract rating score from AI output
 def extract_rating(text):
+    """Parse numeric rating (0-1 scale) from model output."""
     # using this means that we need to state in the prompt that "Rating: xx/100" must appear in the output exactly once"
     match = re.search(r'Rating:\s*(\d+)/100', text)
     if match:
@@ -57,6 +74,7 @@ def extract_rating(text):
 
 # Extract style comments from AI output
 def extract_style_paragraph(text):
+    """Extract the 'Style:' section from model output."""
     match = re.search(r'Style:\s*(.*?)(?=\s*(Rating:|Comment:|$))', text, re.DOTALL)
     if match:
         return match.group(1).strip()
@@ -64,15 +82,21 @@ def extract_style_paragraph(text):
 
 # Extract comments for improvement from AI output
 def extract_comment(text):
+    """Extract the 'Comment:' section from model output."""
     match = re.search(r'Comment:\s*(.*)', text, re.DOTALL)
     if match:
         return match.group(1).strip()
     return None
 
+# ----------------------------
+# Core Outfit Analyzer
+# ----------------------------
+
 # Outfit analyzer tool
 def analyze_outfit(image_name: str) -> str:
     """
-    Analyze the outfit in the given image (from the Images/ folder) and return a structured critique.
+    Run the Qwen2.5-VL model on a given outfit image.
+    Returns a structured critique (Style, Rating, Comment).
     """
     print(f"[DEBUG] Loading image: {image_name}")
     print("[DEBUG] CWD:", os.getcwd())
@@ -81,6 +105,8 @@ def analyze_outfit(image_name: str) -> str:
     img = get_image(image_name)
 
     print("[DEBUG] Creating message payload")
+
+    # Create conversation like payload with both image + text prompt
     messages = [
         {
             "role": "user",
@@ -92,11 +118,14 @@ def analyze_outfit(image_name: str) -> str:
     ]
 
     print("[DEBUG] Applying chat template")
+
+    # Prepare model input
     text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
     print("[DEBUG] Preprocessing input")
     inputs = processor(text=[text], images=[img], padding=True, return_tensors="pt").to("cuda")
 
+    # Generate critique
     print("[DEBUG] Running model.generate()")
     outputs = model.generate(
         **inputs,
@@ -108,6 +137,8 @@ def analyze_outfit(image_name: str) -> str:
         eos_token_id=processor.tokenizer.eos_token_id
     )
 
+
+    # Decode into human-readable text
     print("[DEBUG] Trimming generated tokens")
     generated_ids_trimmed = [out[len(inp):] for inp, out in zip(inputs.input_ids, outputs)]
 
@@ -117,11 +148,16 @@ def analyze_outfit(image_name: str) -> str:
     print("[DEBUG] Output ready")
     return result[0]
 
+# ----------------------------
+# LangChain Integration
+# ----------------------------
+
 @tool
 def analyze_outfit_tool(image_name: str) -> str:
     """
     LangChain tool version of the outfit analyzer.
-    Input: image filename located in 'Images/' folder.
-    Output: Model's style, rating, and comment critique.
+    Enables easy integration with LangChain workflows.
+    Input: image filename (in Images/).
+    Output: Model critique (Style, Rating, Comment).
     """
     return analyze_outfit(image_name)
